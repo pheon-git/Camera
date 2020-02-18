@@ -4,37 +4,42 @@ public class Camera {
 
     private final Sensor sensor;
     private final MemoryCard memorycard;
-    private WriteCompleteListener listener;
-    private boolean powerStatus;
+    private boolean cameraPowerStatus;
     private boolean writing;
 
-    public Camera(Sensor sensor, MemoryCard memorycard, WriteCompleteListener listener) {
+    public Camera(Sensor sensor, MemoryCard memorycard) {
         this.sensor = sensor;
         this.memorycard = memorycard;
-        this.listener = listener;
-        this.powerStatus = false;
+        this.cameraPowerStatus = false;
         this.writing = false;
     }
 
     public void pressShutter() {
-        if(this.powerStatus){
+//        this.sensor.powerUp();
+        if(this.cameraPowerStatus ==true){
             byte[] sensorData  = this.sensor.readData();
             this.writing = true;
-            this.memorycard.write(sensorData,this.listener);
+            this.memorycard.write(sensorData,new listener());
         }
     }
 
     public void powerOn() {
-        this.powerStatus = true;
+        this.cameraPowerStatus = true;
         this.sensor.powerUp();
     }
 
     public void powerOff() {
-        if(!this.writing){
-        this.powerStatus = false;
-        this.sensor.powerDown();
+        if(this.writing==false){
+            this.cameraPowerStatus = false;
+            this.sensor.powerDown();
         }
     }
-
+   class listener implements WriteCompleteListener{
+       @Override
+       public void writeComplete() {
+           Camera.this.writing = false;
+           Camera.this.sensor.powerDown();
+       }
+   }
 }
 
