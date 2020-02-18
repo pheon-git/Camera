@@ -15,6 +15,7 @@ public class CameraTest {
         cam.powerOn();
         verify(mocksensor).powerUp();
     }
+
     @Test
     public void switchingTheCameraOffPowersDownTheSensor() {
         cam.powerOff();
@@ -34,30 +35,40 @@ public class CameraTest {
     }
 
     @Test
-    public void pressingShutterWhenPowerOffDoesNothing(){
+    public void pressingShutterWhenPowerOffDoesNothing() {
         cam.powerOff();
         cam.pressShutter();
-        verify(mocksensor,never()).readData();
-        verify(memcard,never()).write(eq(mocksensor.readData()), any());
+        verify(mocksensor, never()).readData();
+        verify(memcard, never()).write(eq(mocksensor.readData()), any());
     }
 
     @Test
-    public void doesNotSwitchOffWhenWritingData(){
+    public void doesNotSwitchOffWhenWritingData() {
         cam.powerOn();
         cam.pressShutter();
         cam.powerOff();
-        verify(mocksensor,never()).powerDown();
+        verify(mocksensor, never()).powerDown();
     }
 
     @Test
-    public void shutsDownOnceWriteComplete(){
+    public void shutsDownOnceWriteComplete() {
         cam.powerOn();
         cam.pressShutter();
         cam.powerOff();
         ArgumentCaptor<WriteCompleteListener> listenerCaptor = ArgumentCaptor.forClass(WriteCompleteListener.class);
-        verify(mocksensor,never()).powerDown();
-        verify(memcard).write(any(),listenerCaptor.capture());
+        verify(mocksensor, never()).powerDown();
+        verify(memcard).write(any(), listenerCaptor.capture());
         listenerCaptor.getValue().writeComplete();
-        verify(mocksensor).powerDown();
+        verify(mocksensor).powerDown(); //verify PD
     }
+    @Test public void DoNotShutDownOnceWriteComplete(){
+        cam.powerOn();
+        cam.pressShutter();
+        ArgumentCaptor<WriteCompleteListener> listenerCaptor = ArgumentCaptor.forClass(WriteCompleteListener.class);
+        verify(mocksensor, never()).powerDown();
+        verify(memcard).write(any(), listenerCaptor.capture());
+        listenerCaptor.getValue().writeComplete();
+        verify(mocksensor, never()).powerDown(); //Dont Verify PD
+    }
+
 }

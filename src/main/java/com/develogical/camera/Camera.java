@@ -5,6 +5,7 @@ public class Camera {
     private final Sensor sensor;
     private final MemoryCard memorycard;
     private boolean cameraPowerStatus;
+    private boolean offTriggered;
     private boolean writing;
 
     public Camera(Sensor sensor, MemoryCard memorycard) {
@@ -15,7 +16,7 @@ public class Camera {
     }
 
     public void pressShutter() {
-//        this.sensor.powerUp();
+        //this.sensor.powerUp();
         if(this.cameraPowerStatus ==true){
             byte[] sensorData  = this.sensor.readData();
             this.writing = true;
@@ -24,11 +25,13 @@ public class Camera {
     }
 
     public void powerOn() {
+        this.offTriggered = false;
         this.cameraPowerStatus = true;
         this.sensor.powerUp();
     }
 
     public void powerOff() {
+        this.offTriggered= true;
         if(this.writing==false){
             this.cameraPowerStatus = false;
             this.sensor.powerDown();
@@ -38,7 +41,9 @@ public class Camera {
        @Override
        public void writeComplete() {
            Camera.this.writing = false;
-           Camera.this.sensor.powerDown();
+           if(Camera.this.offTriggered==true){
+               Camera.this.sensor.powerDown();
+           }
        }
    }
 }
